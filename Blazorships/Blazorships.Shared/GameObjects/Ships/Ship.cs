@@ -6,8 +6,9 @@ namespace Blazorships.Shared.GameObjects
     /// <summary>
     /// Represents a player's ship as placed on their Game Board.
     /// </summary>
-    public abstract class Ship
+    public class Ship
     {
+        public Ship() { }
         public string Name { get; set; }
         public int Width { get; set; }
         public int Hits { get; set; }

@@ -19,6 +19,8 @@ namespace Blazorships.Shared.GameObjects
             OccupationType = OccupationType.Empty;
         }
 
+        public Panel() { }
+
         public string Status
         {
             get
@@ -26,6 +28,8 @@ namespace Blazorships.Shared.GameObjects
                 return OccupationType.GetAttributeOfType<DescriptionAttribute>().Description;
             }
         }
+
+        public bool IsHit {get;set;}
 
         public bool IsOccupied
         {

@@ -5,7 +5,7 @@ namespace Blazorships.Shared.Helpers
 {
     public enum OccupationType
     {
-        [Description("o")]
+        [Description(" ")]
         Empty,
         [Description("B")]
         Battleship,

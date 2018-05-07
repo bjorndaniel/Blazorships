@@ -32,6 +32,7 @@ namespace Blazorships.Server
                     WasmMediaTypeNames.Application.Wasm,
                 });
             });
+            services.AddMemoryCache();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,6 +52,7 @@ namespace Blazorships.Server
             app.UseSignalR(routes =>
             {
                 routes.MapHub<ChatHub>("/chathub");
+                routes.MapHub<ChatHub>("/gamehub");
             });
             app.UseBlazor<Client.Program>();
         }

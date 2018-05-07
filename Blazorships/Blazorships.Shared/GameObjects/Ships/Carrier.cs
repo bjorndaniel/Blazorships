@@ -3,7 +3,7 @@ using Blazorships.Shared.Helpers;
 
 namespace Blazorships.Shared.GameObjects
 {
- public class Carrier : Ship
+    public class Carrier : Ship
     {
         public Carrier()
         {

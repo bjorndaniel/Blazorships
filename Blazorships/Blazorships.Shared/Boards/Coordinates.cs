@@ -12,5 +12,7 @@ namespace Blazorships.Shared.GameObjects
             Row = row;
             Column = column;
         }
+
+        public Coordinates() { }
     }
 }

@@ -7,51 +7,40 @@ using Blazorships.Shared.Helpers;
 
 public class Player
 {
+    public string Id { get; set; }
     public string Name { get; set; }
     public GameBoard GameBoard { get; set; }
     public FiringBoard FiringBoard { get; set; }
     public List<Ship> Ships { get; set; }
-    public bool HasLost => Ships.All(x => x.IsSunk);
-
-    public Player(string name)
+    public bool HasLost => Ships.All (x => x.IsSunk);
+    public bool IsMyTurn { get; set; }
+    public string ConnectionId { get; set; }
+    public Player (string name)
     {
+        Id = Guid.NewGuid ().ToString ();
         Name = name;
-        Ships = new List<Ship>()
+        Ships = new List<Ship> ()
         {
-            new Destroyer(),
-            new Submarine(),
-            new Cruiser(),
-            new Battleship(),
-            new Carrier()
+            new Destroyer (),
+            new Submarine (),
+            new Cruiser (),
+            new Battleship (),
+            new Carrier ()
         };
-        GameBoard = new GameBoard();
-        FiringBoard = new FiringBoard();
-    }
 
-    public void OutputBoards()
-    {
-        Console.WriteLine(Name);
-        Console.WriteLine("Own Board:                          Firing Board:");
-        for (int row = 1; row <= 10; row++)
+        GameBoard = new GameBoard ();
+        FiringBoard = new FiringBoard ();
+        if (!string.IsNullOrEmpty (name))
         {
-            for (int ownColumn = 1; ownColumn <= 10; ownColumn++)
-            {
-                Console.Write(GameBoard.Panels.At(row, ownColumn).Status + " ");
-            }
-            Console.Write("                ");
-            for (int firingColumn = 1; firingColumn <= 10; firingColumn++)
-            {
-                Console.Write(FiringBoard.Panels.At(row, firingColumn).Status + " ");
-            }
-            Console.WriteLine(Environment.NewLine);
+            PlaceShips ();
         }
-        Console.WriteLine(Environment.NewLine);
     }
+    public Player() { }
 
-    public void PlaceShips()
+    private void PlaceShips ()
     {
         //Random class creation stolen from http://stackoverflow.com/a/18267477/106356
-        Random rand = new Random(Guid.NewGuid().GetHashCode());
+        Random rand = new Random (Guid.NewGuid ().GetHashCode ());
         foreach (var ship in Ships)
         {
             //Select a random row/column combination, then select a random orientation.
@@ -61,12 +50,12 @@ public class Player
             bool isOpen = true;
             while (isOpen)
             {
-                var startcolumn = rand.Next(1, 11);
-                var startrow = rand.Next(1, 11);
+                var startcolumn = rand.Next (1, 11);
+                var startrow = rand.Next (1, 11);
                 int endrow = startrow, endcolumn = startcolumn;
-                var orientation = rand.Next(1, 101) % 2; //0 for Horizontal
+                var orientation = rand.Next (1, 101)% 2; //0 for Horizontal
 
-                List<int> panelNumbers = new List<int>();
+                List<int> panelNumbers = new List<int> ();
                 if (orientation == 0)
                 {
                     for (int i = 1; i < ship.Width; i++)
@@ -90,8 +79,8 @@ public class Player
                 }
 
                 //Check if specified panels are occupied
-                var affectedPanels = GameBoard.Panels.Range(startrow, startcolumn, endrow, endcolumn);
-                if (affectedPanels.Any(x => x.IsOccupied))
+                var affectedPanels = GameBoard.Panels.Range (startrow, startcolumn, endrow, endcolumn);
+                if (affectedPanels.Any (x => x.IsOccupied))
                 {
                     isOpen = true;
                     continue;
@@ -106,60 +95,61 @@ public class Player
         }
     }
 
-    public Coordinates FireShot()
+    public Coordinates FireShot ()
     {
         //If there are hits on the board with neighbors which don't have shots, we should fire at those first.
-        var hitNeighbors = FiringBoard.GetHitNeighbors();
+        var hitNeighbors = FiringBoard.GetHitNeighbors ();
         Coordinates coords;
-        if (hitNeighbors.Any())
+        if (hitNeighbors.Any ())
         {
-            coords = SearchingShot();
+            coords = SearchingShot ();
         }
         else
         {
-            coords = RandomShot();
+            coords = RandomShot ();
         }
-        Console.WriteLine(Name + " says: \"Firing shot at " + coords.Row.ToString() + ", " + coords.Column.ToString() + "\"");
+        Console.WriteLine (Name + " says: \"Firing shot at " + coords.Row.ToString ()+ ", " + coords.Column.ToString ()+ "\"");
         return coords;
     }
 
-    private Coordinates RandomShot()
+    private Coordinates RandomShot ()
     {
-        var availablePanels = FiringBoard.GetOpenRandomPanels();
-        Random rand = new Random(Guid.NewGuid().GetHashCode());
-        var panelID = rand.Next(availablePanels.Count);
+        var availablePanels = FiringBoard.GetOpenRandomPanels ();
+        Random rand = new Random (Guid.NewGuid ().GetHashCode ());
+        var panelID = rand.Next (availablePanels.Count);
         return availablePanels[panelID];
     }
 
-    private Coordinates SearchingShot()
+    private Coordinates SearchingShot ()
     {
-        Random rand = new Random(Guid.NewGuid().GetHashCode());
-        var hitNeighbors = FiringBoard.GetHitNeighbors();
-        var neighborID = rand.Next(hitNeighbors.Count);
+        Random rand = new Random (Guid.NewGuid ().GetHashCode ());
+        var hitNeighbors = FiringBoard.GetHitNeighbors ();
+        var neighborID = rand.Next (hitNeighbors.Count);
         return hitNeighbors[neighborID];
     }
 
-    public ShotResult ProcessShot(Coordinates coords)
+    public ShotResult ProcessShot (Coordinates coords)
     {
-        var panel = GameBoard.Panels.At(coords.Row, coords.Column);
+        var panel = GameBoard.Panels.At (coords.Row, coords.Column);
         if (!panel.IsOccupied)
         {
-            Console.WriteLine(Name + " says: \"Miss!\"");
+            Console.WriteLine (Name + " says: \"Miss!\"");
             return ShotResult.Miss;
         }
-        var ship = Ships.First(x => x.OccupationType == panel.OccupationType);
+        var ship = Ships.First (x => x.OccupationType == panel.OccupationType);
         ship.Hits++;
-        Console.WriteLine(Name + " says: \"Hit!\"");
+        panel.IsHit = true;
+        Console.WriteLine (Name + " says: \"Hit!\"");
         if (ship.IsSunk)
         {
-            Console.WriteLine(Name + " says: \"You sunk my " + ship.Name + "!\"");
+            Console.WriteLine (Name + " says: \"You sunk my " + ship.Name + "!\"");
         }
         return ShotResult.Hit;
     }
 
-    public void ProcessShotResult(Coordinates coords, ShotResult result)
+    public void ProcessShotResult (Coordinates coords, ShotResult result)
     {
-        var panel = FiringBoard.Panels.At(coords.Row, coords.Column);
+        var panel = FiringBoard.Panels.At (coords.Row, coords.Column);
         switch (result)
         {
             case ShotResult.Hit:
