@@ -34,8 +34,10 @@ Blazor.registerFunction('Blazorships.Client.JsInterop.InitChat', function () {
     document.getElementById("btnFire").addEventListener("click", event => {
         const playerId = document.getElementById('playerId').value;
         const gameId = document.getElementById('gameId').value;
+        const row = document.getElementById('hfSelectedRow').value;
+        const column = document.getElementById('hfSelectedColumn').value;
         connection
-            .invoke("Fire", gameId, playerId)
+            .invoke("Fire", gameId, playerId, row, column)
             .catch(err => console.error);
         event.preventDefault();
     });

@@ -64,11 +64,11 @@ namespace Blazorships.Server.Hubs
         }
 
 
-        public async Task Fire(string gameId, string playerId)
+        public async Task Fire(string gameId, string playerId, int row, int column)
         {
             var games = _cache.Get<List<Game>>("GameCacheKey");
             var game = games.First(_ => _.Id == gameId);
-            game.Fire(playerId);
+            game.Fire(playerId, row, column);
             _cache.Set("GameCacheKey", games);
             await SendUpdateGame(game);
             //await Clients.All.SendAsync("GameUpdated", game.Id);

@@ -6,6 +6,7 @@
             <div class="col-sm">
                 <h2>Blazorships - a battleships implementation</h2>
                 <p>Built using Blazor and SignalR</p>
+                <p>Check out the code on <a href="https://github.com/bjorndaniel/Blazorships">GitHub</a></p>
             </div>
         </div>
         <div class="row">
@@ -18,19 +19,21 @@
                     <button type="button" class="btn btn-primary mb-2" id="btnPlay" disabled="@(!CurrentGame.SpotAvailable)">Play game</button>
                     <input type="hidden" bind="@Player.Id" id="playerId" />
                     <input type="hidden" bind="@CurrentGame.Id" id="gameId" />
+                    <input type="hidden" bind="@SelectedRow" id="hfSelectedRow" />
+                    <input type="hidden" bind="@SelectedColumn" id="hfSelectedColumn" />
                 </form>
             </div>
         </div>
         <div class="row text-center">
             <div class="col-sm">
-                <h4>Your ships</h4>
             </div>
             <div class="col-sm">
-                <h4>Firing board</h4>
             </div>
         </div>
         <div class="row">
             <div class="col-sm text-center">
+                <h4>Your ships</h4>
+
                 <table class="ship-board">
                     @for (int i = 1; i <= 10; i++)
                     {
@@ -38,7 +41,7 @@
                             @for (int j = 1; j <= 10; j++)
                             {
                                 <td class="ship-tile @(Player.GameBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).IsHit ? "red" : "")">
-                                    @Player.GameBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status
+                                    <div style="width:35px;height:35px;">@Player.GameBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status</div>
                                 </td>
                             }
                         </tr>
@@ -47,14 +50,17 @@
 
             </div>
             <div class="col-sm text-center">
+                <h4>Firing board</h4>
                 <table class="ship-board">
                     @for (int i = 1; i <= 10; i++)
                     {
                         <tr>
                             @for (int j = 1; j <= 10; j++)
                             {
+                                var square = new Coordinates { Row = i, Column = j };
                                 <td class="ship-tile @(Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status == "X" ? "green" : "")">
-                                    @Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status
+                                    <div style="width:35px;height:35px;" class="@((SelectedRow == i && SelectedColumn == j) ? "yellow" : "")"
+                                         onclick="@(() => SelectFiringSquare(square))">@Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status</div>
                                 </td>
                             }
                         </tr>
@@ -64,6 +70,7 @@
         </div>
         <div class="row">
             <div class="col-sm text-center">
+                <p>When it is your turn, click on an empty square on the firing board and press fire</p>
                 <br />
                 <button class="btn btn-danger" disabled="@(!Player.IsMyTurn)" id="btnFire">Fire!</button>
                 <h4>@CurrentGame.StatusText</h4>
@@ -100,6 +107,8 @@
 
     @functions
     {
+        public int SelectedRow { get; set; } = -1;
+        public int SelectedColumn { get; set; } = -1;
         string PlayerName { get; set; }
         Game CurrentGame { get; set; }
         Player Player { get; set; }
@@ -114,12 +123,26 @@
             JsInterop.InitChat();
         }
 
+        void SelectFiringSquare(Coordinates selectedSquare)
+        {
+            Console.WriteLine($"Clicked on {selectedSquare.Row} {selectedSquare.Column}");
+            var panel = Player.FiringBoard.Panels.FirstOrDefault(_ => _.Coordinates.Row == selectedSquare.Row && _.Coordinates.Column == selectedSquare.Column);
+            if(panel == null || panel.Status != " ")
+            {
+                return;
+            }
+            SelectedRow = selectedSquare.Row;
+            SelectedColumn = selectedSquare.Column;
+        }
+
         async Task UpdateGame()
         {
             var gameId = LocalStorage.Get<GameDTO>("CurrentGameId");
             Console.WriteLine($"Updating game {gameId}");
             var game = await Http.GetJsonAsync<Game>($"/api/Game/UpdateGame?gameid={gameId.Id}");
             var player = game.GetPlayerByName(PlayerName);
+            SelectedColumn = -1;
+            SelectedRow = -1;
             if(player != null)
             {
                 Player = player;

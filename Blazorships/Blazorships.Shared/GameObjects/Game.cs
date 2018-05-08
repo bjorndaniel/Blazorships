@@ -1,4 +1,5 @@
 //From https://github.com/exceptionnotfound/BattleshipModellingPractice
+using Blazorships.Shared.GameObjects;
 using System;
 
 public class Game
@@ -12,11 +13,11 @@ public class Game
     {
         get
         {
-            if (string.IsNullOrEmpty (Player1?.Name)|| string.IsNullOrEmpty (Player2?.Name))
+            if (string.IsNullOrEmpty(Player1?.Name) || string.IsNullOrEmpty(Player2?.Name))
             {
                 return "Waiting for player";
             }
-            if(GameOver)
+            if (GameOver)
             {
                 return $"The winner is {Winner}";
             }
@@ -24,7 +25,7 @@ public class Game
             {
                 return $"{Player1.Name} firing";
             }
-            if(Player2.IsMyTurn)
+            if (Player2.IsMyTurn)
             {
                 return $"{Player2.Name} firing";
             }
@@ -32,13 +33,13 @@ public class Game
         }
 
     }
-    public Game (bool empty = true)
+    public Game(bool empty = true)
     {
-        Id = Guid.NewGuid ().ToString ();
+        Id = Guid.NewGuid().ToString();
         if (empty)
         {
-            Player1 = new Player ("");
-            Player2 = new Player ("");
+            Player1 = new Player("");
+            Player2 = new Player("");
         }
     }
 
@@ -48,15 +49,15 @@ public class Game
         Player2 = new Player("");
     }
 
-    public void AddPlayer (string name, bool isPlayer1 = true)
+    public void AddPlayer(string name, bool isPlayer1 = true)
     {
         if (isPlayer1)
         {
-            Player1 = new Player (name);
+            Player1 = new Player(name);
         }
         else
         {
-            Player2 = new Player (name);
+            Player2 = new Player(name);
         }
     }
 
@@ -65,29 +66,29 @@ public class Game
         Player1.IsMyTurn = true;
     }
 
-    public bool SpotAvailable => string.IsNullOrEmpty (Player2?.Name);
+    public bool SpotAvailable => string.IsNullOrEmpty(Player2?.Name);
 
-    public void PlayRound ()
+    public void PlayRound()
     {
         //Each exchange of shots is called a Round.
         //One round = Player 1 fires a shot, then Player 2 fires a shot.
-        var coordinates = Player1.FireShot ();
-        var result = Player2.ProcessShot (coordinates);
-        Player1.ProcessShotResult (coordinates, result);
+        var coordinates = Player1.FireShot();
+        var result = Player2.ProcessShot(coordinates);
+        Player1.ProcessShotResult(coordinates, result);
 
         if (!Player2.HasLost)//If player 2 already lost, we can't let them take another turn.
         {
-            coordinates = Player2.FireShot ();
-            result = Player1.ProcessShot (coordinates);
-            Player2.ProcessShotResult (coordinates, result);
+            coordinates = Player2.FireShot();
+            result = Player1.ProcessShot(coordinates);
+            Player2.ProcessShotResult(coordinates, result);
         }
     }
 
-    public Player GetPlayer (string id) => Player1.Id == id ? Player1 : Player2;
+    public Player GetPlayer(string id) => Player1.Id == id ? Player1 : Player2;
 
     public Player GetPlayerByName(string name)
     {
-        if(Player1.Name == name)
+        if (Player1.Name == name)
         {
             return Player1;
         }
@@ -98,7 +99,7 @@ public class Game
         return null;
     }
 
-    public void Fire (string playerId)
+    public void Fire(string playerId, int row = -1, int column = -1)
     {
         if (Player1.Id == playerId)
         {
@@ -107,9 +108,13 @@ public class Game
                 Console.WriteLine("Not Player1's turn");
                 return;
             }
-            var coordinates = Player1.FireShot ();
-            var result = Player2.ProcessShot (coordinates);
-            Player1.ProcessShotResult (coordinates, result);
+            var coordinates = new Coordinates { Row = row, Column = column };
+            if(coordinates.Column < 0 || coordinates.Row < 0)
+            {
+                coordinates = Player1.FireShot();
+            }
+            var result = Player2.ProcessShot(coordinates);
+            Player1.ProcessShotResult(coordinates, result);
         }
         else
         {
@@ -118,9 +123,13 @@ public class Game
                 Console.WriteLine("Not Player2's turn");
                 return;
             }
-            var coordinates = Player2.FireShot ();
-            var result = Player1.ProcessShot (coordinates);
-            Player2.ProcessShotResult (coordinates, result);
+            var coordinates = new Coordinates { Row = row, Column = column };
+            if (coordinates.Column < 0 || coordinates.Row < 0)
+            {
+                coordinates = Player2.FireShot();
+            }
+            var result = Player1.ProcessShot(coordinates);
+            Player2.ProcessShotResult(coordinates, result);
         }
         Player1.IsMyTurn = !Player1.IsMyTurn;
         Player2.IsMyTurn = !Player2.IsMyTurn;
