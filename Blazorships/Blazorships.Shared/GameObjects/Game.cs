@@ -145,4 +145,21 @@ public class Game
         }
     }
 
+    public void PlayToEnd()
+    {
+        while (!Player1.HasLost && !Player2.HasLost)
+        {
+            PlayRound();
+        }
+        if (Player1.HasLost)
+        {
+            GameOver = true;
+            Winner = Player2.Name;
+        }
+        else if (Player2.HasLost)
+        {
+            GameOver = true;
+            Winner = Player1.Name;
+        }
+    }
 }

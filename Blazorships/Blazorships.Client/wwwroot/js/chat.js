@@ -1,4 +1,4 @@
-﻿let transportType = signalR.TransportType.WebSockets;
+﻿﻿let transportType = signalR.TransportType.WebSockets;
 let http = new signalR.HttpConnection(`http://${document.location.host}/chathub`, { transport: transportType });
 let connection = new signalR.HubConnection(http);
 connection.start();
@@ -31,6 +31,12 @@ Blazor.registerFunction('Blazorships.Client.JsInterop.InitChat', function () {
         event.preventDefault();
     });
 
+    document.getElementById("btnEnd").addEventListener("click", event => {
+        const gameId = document.getElementById('gameId').value;
+        connection.invoke("PlayToEnd", gameId).catch(err => console.error);
+        event.preventDefault();
+    });
+
     document.getElementById("btnFire").addEventListener("click", event => {
         const playerId = document.getElementById('playerId').value;
         const gameId = document.getElementById('gameId').value;
@@ -52,3 +58,6 @@ connection
     });
 
 connection.start().catch(err => console.error);
+Blazor.registerFunction('Blazorships.Client.JsInterop.Alert', function (message) {
+    alert(message);
+});

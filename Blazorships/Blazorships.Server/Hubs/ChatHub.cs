@@ -71,7 +71,15 @@ namespace Blazorships.Server.Hubs
             game.Fire(playerId, row, column);
             _cache.Set("GameCacheKey", games);
             await SendUpdateGame(game);
-            //await Clients.All.SendAsync("GameUpdated", game.Id);
+        }
+
+        public async Task PlayToEnd(string gameId)
+        {
+            var games = _cache.Get<List<Game>>("GameCacheKey");
+            var game = games.First(_ => _.Id == gameId);
+            game.PlayToEnd();
+            _cache.Set("GameCacheKey", games);
+            await SendUpdateGame(game);
         }
 
         public Game GetGame(string gameId) => _cache.Get<List<Game>>("GameCacheKey").FirstOrDefault(_ => _.Id == gameId);
@@ -89,6 +97,7 @@ namespace Blazorships.Server.Hubs
                 await Clients.Client(game.Player2.ConnectionId).SendAsync("GameUpdated", game.Id);
             }
         }
+
     }
 
 }

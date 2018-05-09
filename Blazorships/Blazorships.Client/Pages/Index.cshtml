@@ -73,6 +73,7 @@
                 <p>When it is your turn, click on an empty square on the firing board and press fire</p>
                 <br />
                 <button class="btn btn-danger" disabled="@(!Player.IsMyTurn)" id="btnFire">Fire!</button>
+                <button class="btn btn-primary" id="btnEnd">Let the server play to end</button>
                 <h4>@CurrentGame.StatusText</h4>
             </div>
         </div>
@@ -147,6 +148,10 @@
             {
                 Player = player;
                 CurrentGame = game;
+            }
+            if (CurrentGame.GameOver)
+            {
+                JsInterop.Alert(CurrentGame.StatusText);
             }
         }
     }

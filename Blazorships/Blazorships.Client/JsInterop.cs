@@ -10,5 +10,12 @@ namespace Blazorships.Client
                 "Blazorships.Client.JsInterop.InitChat");
 
         }
+
+        public static string Alert(string message)
+        {
+            return RegisteredFunction.Invoke<string>(
+                "Blazorships.Client.JsInterop.Alert", message);
+
+        }
     }
 }
