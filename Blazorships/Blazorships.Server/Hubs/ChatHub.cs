@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Browser.Interop;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Browser.Interop;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Blazorships.Server.Hubs
 {
@@ -22,9 +22,8 @@ namespace Blazorships.Server.Hubs
         }
         public async Task SendMessage(string gameId, string playerId, string message)
         {
-            //TODO: only send to a game
             var games = _cache.Get<List<Game>>("GameCacheKey");
-            var game = games.First(_ => _.Id == gameId);
+            var game = games.FirstOrDefault(_ => _.Id == gameId);
             if (game != null)
             {
                 if (!string.IsNullOrEmpty(game.Player1.ConnectionId))
@@ -35,9 +34,7 @@ namespace Blazorships.Server.Hubs
                 {
                     await Clients.Client(game.Player2.ConnectionId).SendAsync("ReceiveMessage", game.GetPlayer(playerId).Name, message);
                 }
-
             }
-            //await Clients.All.SendAsync("ReceiveMessage", playerId, message);
         }
 
         public async Task InitGame(string user)//TODO: Get unique connection
@@ -60,9 +57,8 @@ namespace Blazorships.Server.Hubs
                 game.Start();
             }
             await SendUpdateGame(game);
-            //await Clients.All
-        }
 
+        }
 
         public async Task Fire(string gameId, string playerId, int row, int column)
         {
@@ -82,9 +78,9 @@ namespace Blazorships.Server.Hubs
             await SendUpdateGame(game);
         }
 
-        public Game GetGame(string gameId) => _cache.Get<List<Game>>("GameCacheKey").FirstOrDefault(_ => _.Id == gameId);
+        public Game GetGame(string gameId)=> _cache.Get<List<Game>>("GameCacheKey").FirstOrDefault(_ => _.Id == gameId);
 
-        private Game GetSinglePlayerGame() => _cache.Get<List<Game>>("GameCacheKey").FirstOrDefault(_ => _.SpotAvailable);
+        private Game GetSinglePlayerGame()=> _cache.Get<List<Game>>("GameCacheKey").FirstOrDefault(_ => _.SpotAvailable);
 
         private async Task SendUpdateGame(Game game)
         {
@@ -101,4 +97,3 @@ namespace Blazorships.Server.Hubs
     }
 
 }
-

@@ -89,7 +89,7 @@
                         <label for="message" class="sr-only">Message:</label>
                         <input type="text" class="form-control" id="messageInput" placeholder="Type your message here" />
                     </div>
-                    <input type="button" class="btn btn-success mb-2" id="sendButton" value="Send Message" />
+                    <input type="button" disabled="@(!CurrentGame.IsStarted)" class="btn btn-success mb-2" id="sendButton" value="Send Message" />
                     <input type="button" class="btn btn-success" id="btnUpdateGame" style="display:none;" value="" onclick="@UpdateGame" />
                 </form>
             </div>

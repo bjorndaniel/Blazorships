@@ -1,7 +1,13 @@
-﻿﻿let transportType = signalR.TransportType.WebSockets;
-let http = new signalR.HttpConnection(`http://${document.location.host}/chathub`, { transport: transportType });
-let connection = new signalR.HubConnection(http);
-connection.start();
+﻿﻿// let transportType = signalR.TransportType.WebSockets;
+// let http = new signalR.HttpConnection(`http://${document.location.host}/chathub`, { transport: transportType });
+// let connection = new signalR.HubConnection(http);
+var connection = new signalR.HubConnectionBuilder()
+                            .withUrl('/chathub')
+    .build();
+connection.start()
+    .then(() => console.log('SignalR hub connected'))
+    .catch(err => console.error);
+
 let isInitialized = false;
 let updateGameMethod;
 Blazor.registerFunction('Blazorships.Client.JsInterop.InitChat', function () {
@@ -57,7 +63,6 @@ connection
         button.click();
     });
 
-connection.start().catch(err => console.error);
 Blazor.registerFunction('Blazorships.Client.JsInterop.Alert', function (message) {
     alert(message);
 });

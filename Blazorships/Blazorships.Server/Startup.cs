@@ -52,7 +52,6 @@ namespace Blazorships.Server
             app.UseSignalR(routes =>
             {
                 routes.MapHub<ChatHub>("/chathub");
-                routes.MapHub<ChatHub>("/gamehub");
             });
             app.UseBlazor<Client.Program>();
         }

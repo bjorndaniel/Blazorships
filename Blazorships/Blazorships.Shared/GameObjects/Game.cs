@@ -9,6 +9,7 @@ public class Game
     public Player Player2 { get; set; }
     public string Winner { get; set; }
     public bool GameOver { get; set; }
+    public bool IsStarted => !string.IsNullOrEmpty(Player1?.Name ?? "") && !string.IsNullOrEmpty(Player2?.Name ?? "");
     public string StatusText
     {
         get
