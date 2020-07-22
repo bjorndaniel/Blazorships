@@ -1,0 +1,196 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IToastService Toast
+@implements IDisposable
+
+<div class="row">
+    <div class="col text-center">
+        <h2>Blazorships - a battleships implementation</h2>
+        <p>Built using Blazor and SignalR</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <form class="form-inline justify-content-center">
+            <div class="form-group mx-3 mb-2">
+                <label for="userName" class="sr-only">Username:</label>
+                <input type="text" class="form-control" id="userName" placeholder="Username" @bind="@PlayerName" disabled="@(!CurrentGame.SpotAvailable)" />
+            </div>
+            <button type="button" class="btn btn-primary mb-2" @onclick="@Play" disabled="@(!CurrentGame.SpotAvailable)">Play game</button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm text-center">
+        <h4>Your ships</h4>
+
+        <table class="ship-board">
+            @for (int i = 1; i <= 10; i++)
+            {
+                <tr>
+                    @for (int j = 1; j <= 10; j++)
+                    {
+                        <td class="ship-tile @(Player.GameBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).IsHit ? "red" : "")">
+                            <div style="width:35px;height:35px;">@Player.GameBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status</div>
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+
+    </div>
+    <div class="col text-center">
+        <h4>Firing board</h4>
+        <table class="ship-board">
+            @for (int i = 1; i <= 10; i++)
+            {
+                <tr>
+                    @for (int j = 1; j <= 10; j++)
+                    {
+                        var square = new Coordinates { Row = i, Column = j };
+                        <td class="ship-tile @(Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status == "X" ? "green" : "")">
+                            <div style="width:35px;height:35px;" class="@((SelectedRow == i && SelectedColumn == j) ? "yellow" : "")"
+                                 @onclick:preventDefault @onclick="@(() => SelectFiringSquare(square))">@Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status</div>
+                            </td>
+                        }
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col text-center">
+        <p>When it is your turn, click on an empty square on the firing board and press fire</p>
+        <br />
+        <button class="btn btn-danger" disabled="@(!Player.IsMyTurn)" @onclick:preventDefault @onclick="@Fire">Fire!</button>
+        <button class="btn btn-primary" disabled="@(!CurrentGame.IsStarted)" @onclick:preventDefault @onclick="@PlayToEnd">Let the server play to end</button>
+        <h4>@CurrentGame.StatusText</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="col text-center">
+        <h3>Chat with opponent</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col text-center">
+        <form class="form-inline justify-content-center">
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="message" class="sr-only">Message:</label>
+                <input type="text" class="form-control" @bind="@messageInput" placeholder="Type your message here" />
+            </div>
+            <input type="button" disabled="@(!CurrentGame.IsStarted)" class="btn btn-success mb-2" @onclick="@Send" value="Send Message" />
+            <input type="button" class="btn btn-success" id="btnUpdateGame" style="display:none;" value="" @onclick:preventDefault @onclick="@UpdateGame" />
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm">
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <ul>
+            @foreach (var m in messages)
+            {
+                <li>@m</li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code{
+    private HubConnection hubConnection;
+    private List<string> messages = new List<string>();
+    private string userInput;
+    private string messageInput;
+    public int SelectedRow { get; set; } = -1;
+    public int SelectedColumn { get; set; } = -1;
+    string PlayerName { get; set; }
+    Game CurrentGame { get; set; }
+    Player Player { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentGame = new Game();
+        Player = CurrentGame.Player1;
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/gamehub"))
+        .Build();
+
+        hubConnection.On<string, string>("GameMessage", (user, message) =>
+        {
+            var encodedMsg = $"{user}: {message}";
+            messages.Add(encodedMsg);
+            StateHasChanged();
+        });
+
+        hubConnection.On<string>("GameUpdated", async (gameId) =>
+        {
+            CurrentGame.Id = gameId;
+            await UpdateGame();
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    Task Send() =>
+        hubConnection.SendAsync("SendMessage", CurrentGame.Id, Player.Id, messageInput);
+
+    public bool IsConnected =>
+    hubConnection.State == HubConnectionState.Connected;
+
+    async Task Play() =>
+        await hubConnection.SendAsync("InitGame", PlayerName);
+
+    async Task UpdateGame()
+    {
+
+        Console.WriteLine($"Updating game {CurrentGame.Id}");
+        var game = await Http.GetFromJsonAsync<Game>($"api/game/UpdateGame/{CurrentGame.Id}");
+        var player = game.GetPlayerByName(PlayerName);
+        SelectedColumn = -1;
+        SelectedRow = -1;
+        if (player != null)
+        {
+            Player = player;
+            CurrentGame = game;
+        }
+        if (CurrentGame.GameOver)
+        {
+            Toast.ShowSuccess(CurrentGame.StatusText);
+        }
+    }
+
+    async Task Fire() =>
+        await hubConnection.InvokeAsync("Fire", CurrentGame.Id, Player.Id, SelectedRow, SelectedColumn);
+
+    void SelectFiringSquare(Coordinates selectedSquare)
+    {
+        Console.WriteLine($"Clicked on {selectedSquare.Row} {selectedSquare.Column}");
+        var panel = Player.FiringBoard.Panels.FirstOrDefault(_ => _.Coordinates.Row == selectedSquare.Row && _.Coordinates.Column == selectedSquare.Column);
+        if (panel == null || panel.Status != " ")
+        {
+            return;
+        }
+        SelectedRow = selectedSquare.Row;
+        SelectedColumn = selectedSquare.Column;
+    }
+
+    async Task PlayToEnd() =>
+        await hubConnection.InvokeAsync("PlayToEnd", CurrentGame.Id);
+
+    public void Dispose()
+    {
+        _ = hubConnection?.DisposeAsync();
+    }
+}

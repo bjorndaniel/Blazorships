@@ -1,0 +1,12 @@
+﻿@inherits LayoutComponentBase
+
+    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+        @Body
+        <footer class="mastfoot mt-auto text-center">
+            <div class="inner">
+                <p><a href="https://github.com/bjorndaniel/blazorships" target="_blank">Checkout the code on github</a></p>
+            </div>
+        </footer>
+        <BlazoredToasts Position="ToastPosition.TopCenter"
+                        Timeout="10" />
+    </div>
