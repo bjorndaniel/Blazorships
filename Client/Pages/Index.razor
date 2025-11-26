@@ -54,7 +54,9 @@
                         var square = new Coordinates { Row = i, Column = j };
                         <td class="ship-tile @(Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status == "X" ? "green" : "")">
                             <div style="width:35px;height:35px;" class="@((SelectedRow == i && SelectedColumn == j) ? "yellow" : "")"
-                                 @onclick:preventDefault @onclick="@(() => SelectFiringSquare(square))">@Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status</div>
+                                 @onclick:preventDefault @onclick="@(() => SelectFiringSquare(square))">
+                                 @Player.FiringBoard.Panels
+.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status</div>
                             </td>
                         }
                 </tr>
