@@ -43,8 +43,11 @@ jobs:
       - name: Publish Server
         run: dotnet publish Server/Blazorships.Server.csproj -c Release -o ${{ env.PUBLISH_DIR }} --no-restore
 
+      - name: Zip publish output
+        run: cd ${{ env.PUBLISH_DIR }} && zip -r ../app.zip .
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: ${{ env.PUBLISH_DIR }}
+          package: app.zip

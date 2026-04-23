@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(az --version)",
+      "PowerShell(az --version 2>&1)",
+      "PowerShell(az account show --query \"{name:name, id:id}\" -o json 2>&1)",
+      "PowerShell(az webapp show -n blazorships -g blazorships-rg --query \"{state:state, linuxFxVersion:siteConfig.linuxFxVersion, defaultHostName:defaultHostName, kind:kind}\" -o json 2>&1)",
+      "PowerShell(az webapp list-runtimes --os linux 2>&1)",
+      "PowerShell(az webapp config show -n blazorships -g blazorships-rg --query \"{appCommandLine:appCommandLine, linuxFxVersion:linuxFxVersion, netFrameworkVersion:netFrameworkVersion}\" -o json 2>&1)",
+      "PowerShell(az webapp deployment list-publishing-profiles -n blazorships -g blazorships-rg --query \"[?publishMethod=='ZipDeploy'].{method:publishMethod, url:publishUrl}\" -o json 2>&1)",
+      "PowerShell(az webapp log deployment show -n blazorships -g blazorships-rg 2>&1)",
+      "PowerShell(az webapp ssh --command \"ls -la /home/site/wwwroot && echo '---' && ls /home/site/wwwroot/wwwroot 2>/dev/null | head -20\" -n blazorships -g blazorships-rg 2>&1)",
+      "Bash(rm -rf ./publish-test)",
+      "Bash(dotnet publish *)",
+      "Bash(grep -E \"\\\\.\\(dll|runtimeconfig|html\\)$|^wwwroot$\")",
+      "PowerShell(az webapp config set -n blazorships -g blazorships-rg --startup-file \"dotnet Blazorships.Server.dll\" -o json --query \"{appCommandLine:appCommandLine, linuxFxVersion:linuxFxVersion}\" 2>&1)",
+      "PowerShell(az webapp deploy -n blazorships -g blazorships-rg --src-path ./app.zip --type zip --async false 2>&1)"
+    ],
+    "additionalDirectories": [
+      "C:\\Projects\\bjorndaniel\\Blazorships\\publish-test"
+    ]
+  }
+}

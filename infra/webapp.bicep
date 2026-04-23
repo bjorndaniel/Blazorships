@@ -33,6 +33,7 @@ resource app 'Microsoft.Web/sites@2024-04-01' = {
     httpsOnly: true
     siteConfig: {
       linuxFxVersion: linuxFxVersion
+      appCommandLine: 'dotnet Blazorships.Server.dll'
       webSocketsEnabled: true
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
