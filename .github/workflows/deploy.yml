@@ -7,12 +7,33 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: blazorships
+  AZURE_LOCATION: westeurope
   DOTNET_VERSION: '10.0.x'
   PUBLISH_DIR: ./publish
 
 jobs:
-  build-and-deploy:
+  infra:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy infrastructure (Bicep)
+        uses: azure/arm-deploy@v2
+        with:
+          scope: subscription
+          region: ${{ env.AZURE_LOCATION }}
+          template: infra/main.bicep
+          parameters: webAppName=${{ env.AZURE_WEBAPP_NAME }} location=${{ env.AZURE_LOCATION }}
+          failOnStdErr: false
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: infra
     steps:
       - uses: actions/checkout@v4
 
