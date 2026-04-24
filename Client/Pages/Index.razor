@@ -24,42 +24,83 @@
     </div>
 </div>
 
-<div class="row">
+<div class="row boards-row">
     <div class="col-sm text-center">
-        <h4>Your ships</h4>
-
-        <table class="ship-board">
-            @for (int i = 1; i <= 10; i++)
-            {
-                <tr>
+        <div class="board-panel">
+            <h4 class="board-heading">Your Fleet</h4>
+            <div class="battle-board">
+                <div class="battle-board__corner"></div>
+                @for (int c = 1; c <= 10; c++)
+                {
+                    <div class="battle-board__header">@((char)('A' + c - 1))</div>
+                }
+                @for (int i = 1; i <= 10; i++)
+                {
+                    <div class="battle-board__header">@i</div>
                     @for (int j = 1; j <= 10; j++)
                     {
-                        <td class="ship-tile @(Player.GameBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).IsHit ? "red" : "")">
-                            <div style="width:35px;height:35px;">@Player.GameBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status</div>
-                        </td>
+                        var panel = Player.GameBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j);
+                        var cellClass = "battle-board__cell";
+                        if (panel.IsOccupied && panel.IsHit)
+                        {
+                            cellClass += " cell--ship-hit";
+                        }
+                        else if (panel.IsOccupied)
+                        {
+                            cellClass += " cell--ship";
+                        }
+                        else if (panel.IsHit)
+                        {
+                            cellClass += " cell--miss";
+                        }
+                        else
+                        {
+                            cellClass += " cell--water";
+                        }
+                        <div class="@cellClass" data-ship="@panel.Status"></div>
                     }
-                </tr>
-            }
-        </table>
-
+                }
+            </div>
+        </div>
     </div>
     <div class="col text-center">
-        <h4>Firing board</h4>
-        <table class="ship-board">
-            @for (int i = 1; i <= 10; i++)
-            {
-                <tr>
+        <div class="board-panel">
+            <h4 class="board-heading">Firing Board</h4>
+            <div class="battle-board battle-board--firing">
+                <div class="battle-board__corner"></div>
+                @for (int c = 1; c <= 10; c++)
+                {
+                    <div class="battle-board__header">@((char)('A' + c - 1))</div>
+                }
+                @for (int i = 1; i <= 10; i++)
+                {
+                    <div class="battle-board__header">@i</div>
                     @for (int j = 1; j <= 10; j++)
                     {
                         var square = new Coordinates { Row = i, Column = j };
-                        <td class="ship-tile @(Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status == "X" ? "green" : "")">
-                            <div style="width:35px;height:35px;" class="@((SelectedRow == i && SelectedColumn == j) ? "yellow" : "")"
-                                 @onclick:preventDefault @onclick="@(() => SelectFiringSquare(square))">@Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j).Status</div>
-                            </td>
+                        var panel = Player.FiringBoard.Panels.First(_ => _.Coordinates.Row == i && _.Coordinates.Column == j);
+                        var cellClass = "battle-board__cell battle-board__cell--clickable";
+                        if (panel.Status == "X")
+                        {
+                            cellClass += " cell--hit";
                         }
-                </tr>
-            }
-        </table>
+                        else if (panel.Status == "M")
+                        {
+                            cellClass += " cell--miss";
+                        }
+                        else
+                        {
+                            cellClass += " cell--water";
+                        }
+                        if (SelectedRow == i && SelectedColumn == j)
+                        {
+                            cellClass += " cell--selected";
+                        }
+                        <div class="@cellClass" @onclick:preventDefault @onclick="@(() => SelectFiringSquare(square))"></div>
+                    }
+                }
+            </div>
+        </div>
     </div>
 </div>
 

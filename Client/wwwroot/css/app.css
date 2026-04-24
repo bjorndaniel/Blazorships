@@ -190,27 +190,210 @@ body {
         top: 0.5rem;
     }
 
-.ship-board {
+.boards-row {
+    gap: 1.5rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.board-panel {
+    display: inline-block;
+    padding: 1rem 1.25rem 1.25rem;
+    background: linear-gradient(160deg, rgba(10, 22, 40, 0.85), rgba(6, 14, 28, 0.95));
+    border: 1px solid rgba(120, 170, 220, 0.25);
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), inset 0 0 24px rgba(40, 90, 140, 0.15);
+}
+
+.board-heading {
+    margin: 0 0 0.75rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #cfe7ff;
+    text-shadow: 0 0 8px rgba(80, 160, 230, 0.6);
+}
+
+.battle-board {
+    display: grid;
+    grid-template-columns: 22px repeat(10, 32px);
+    grid-template-rows: 22px repeat(10, 32px);
+    gap: 3px;
+    padding: 10px;
     margin: 0 auto;
-    border: 1px #fff solid;
+    background:
+        radial-gradient(ellipse at top, rgba(80, 160, 220, 0.12), transparent 60%),
+        linear-gradient(180deg, #0b2a4a, #061629);
+    border: 1px solid rgba(120, 170, 220, 0.35);
+    border-radius: 10px;
+    box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.7);
 }
 
-.ship-tile {
-    width: 35px;
-    height: 35px;
-    vertical-align: middle;
-    border: 1px #fff solid;
-    text-align: center !important;
+.battle-board__corner {
+    background: transparent;
 }
 
-.red {
-    background-color: red;
+.battle-board__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: rgba(205, 225, 245, 0.65);
+    text-shadow: none;
 }
 
-.green {
-    background-color: green;
+.battle-board__cell {
+    position: relative;
+    border-radius: 4px;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 40%),
+        linear-gradient(180deg, #114874 0%, #0a2f50 100%);
+    border: 1px solid rgba(120, 170, 220, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
-.yellow {
-    background-color: yellow;
+.battle-board__cell--clickable {
+    cursor: crosshair;
+}
+
+.battle-board__cell--clickable.cell--water:hover {
+    background: linear-gradient(180deg, #1a5a8a 0%, #0e3c66 100%);
+    box-shadow: inset 0 0 10px rgba(120, 200, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Ship tile on own board */
+.cell--ship {
+    background:
+        linear-gradient(145deg, #7d8793 0%, #4a5463 55%, #2b323d 100%);
+    border: 1px solid rgba(220, 230, 240, 0.35);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.55),
+        0 0 6px rgba(120, 150, 180, 0.3);
+}
+
+.cell--ship::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.2));
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+/* Ship tile that took a hit (own board) */
+.cell--ship-hit {
+    background:
+        radial-gradient(circle at 50% 45%, #ffd27a 0%, #ff5722 35%, #7a1810 80%);
+    border: 1px solid rgba(255, 180, 120, 0.6);
+    box-shadow:
+        0 0 12px rgba(255, 90, 40, 0.7),
+        inset 0 0 10px rgba(0, 0, 0, 0.6);
+    animation: cell-hit-flash 500ms ease-out;
+}
+
+.cell--ship-hit::before,
+.cell--ship-hit::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 70%;
+    height: 3px;
+    background: #1a0606;
+    border-radius: 2px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.cell--ship-hit::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* Hit on firing board */
+.cell--hit {
+    background:
+        radial-gradient(circle at 50% 45%, #fff2b0 0%, #ff7043 30%, #b11818 70%, #3b0a0a 100%);
+    border: 1px solid rgba(255, 170, 100, 0.6);
+    box-shadow:
+        0 0 14px rgba(255, 80, 40, 0.75),
+        inset 0 0 10px rgba(0, 0, 0, 0.55);
+    animation: cell-hit-flash 500ms ease-out;
+}
+
+.cell--hit::after {
+    content: "";
+    position: absolute;
+    inset: 30%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.8), rgba(255, 150, 60, 0));
+}
+
+/* Miss marker (both boards) */
+.cell--miss::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, #f5faff 0%, #a8c4dc 65%, rgba(168, 196, 220, 0) 100%);
+    box-shadow: 0 0 6px rgba(200, 220, 240, 0.6);
+}
+
+.cell--miss {
+    box-shadow: inset 0 0 8px rgba(80, 140, 200, 0.25);
+}
+
+/* Selected firing target */
+.cell--selected {
+    background: linear-gradient(180deg, #f6c90e 0%, #c98a00 100%);
+    border: 1px solid #fff2a8;
+    box-shadow:
+        0 0 0 2px rgba(255, 220, 80, 0.6),
+        0 0 14px rgba(255, 210, 60, 0.8);
+    animation: cell-selected-pulse 1.2s ease-in-out infinite;
+}
+
+.cell--selected::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1.5px dashed rgba(60, 40, 0, 0.7);
+    border-radius: 3px;
+}
+
+@keyframes cell-hit-flash {
+    0% {
+        transform: scale(1.25);
+        filter: brightness(1.8);
+    }
+    60% {
+        transform: scale(0.97);
+        filter: brightness(1.1);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+
+@keyframes cell-selected-pulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 2px rgba(255, 220, 80, 0.5),
+            0 0 10px rgba(255, 210, 60, 0.6);
+    }
+    50% {
+        box-shadow:
+            0 0 0 3px rgba(255, 235, 130, 0.75),
+            0 0 18px rgba(255, 215, 80, 0.95);
+    }
 }
