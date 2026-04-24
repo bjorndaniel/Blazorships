@@ -191,14 +191,25 @@ body {
     }
 
 .boards-row {
-    gap: 1.5rem;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem;
     margin-top: 1rem;
     margin-bottom: 1rem;
 }
 
+.boards-row > .col,
+.boards-row > .col-sm {
+    flex: 0 0 auto;
+    max-width: none;
+    padding: 0;
+}
+
 .board-panel {
     display: inline-block;
-    padding: 1rem 1.25rem 1.25rem;
+    padding: 0.6rem 0.75rem 0.8rem;
     background: linear-gradient(160deg, rgba(10, 22, 40, 0.85), rgba(6, 14, 28, 0.95));
     border: 1px solid rgba(120, 170, 220, 0.25);
     border-radius: 14px;
@@ -217,10 +228,10 @@ body {
 
 .battle-board {
     display: grid;
-    grid-template-columns: 22px repeat(10, 32px);
-    grid-template-rows: 22px repeat(10, 32px);
-    gap: 3px;
-    padding: 10px;
+    grid-template-columns: 18px repeat(10, 28px);
+    grid-template-rows: 18px repeat(10, 28px);
+    gap: 2px;
+    padding: 6px;
     margin: 0 auto;
     background:
         radial-gradient(ellipse at top, rgba(80, 160, 220, 0.12), transparent 60%),
