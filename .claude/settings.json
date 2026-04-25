@@ -17,7 +17,8 @@
       "PowerShell(az webapp deploy -n blazorships -g blazorships-rg --src-path ./app.zip --type zip --async false 2>&1)"
     ],
     "additionalDirectories": [
-      "C:\\Projects\\bjorndaniel\\Blazorships\\publish-test"
+      "C:\\Projects\\bjorndaniel\\Blazorships\\publish-test",
+      "c:\\Projects\\bjorndaniel\\Blazorships"
     ]
   }
 }

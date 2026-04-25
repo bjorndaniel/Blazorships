@@ -195,25 +195,22 @@ body {
     flex-wrap: nowrap;
     justify-content: center;
     align-items: flex-start;
-    gap: 1rem;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-}
-
-.boards-row > .col,
-.boards-row > .col-sm {
-    flex: 0 0 auto;
-    max-width: none;
-    padding: 0;
+    gap: 1.25rem;
+    margin: 1rem 0;
 }
 
 .board-panel {
-    display: inline-block;
+    flex: 0 0 auto;
     padding: 0.6rem 0.75rem 0.8rem;
     background: linear-gradient(160deg, rgba(10, 22, 40, 0.85), rgba(6, 14, 28, 0.95));
     border: 1px solid rgba(120, 170, 220, 0.25);
     border-radius: 14px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), inset 0 0 24px rgba(40, 90, 140, 0.15);
+    text-align: center;
+}
+
+.board-panel * {
+    box-sizing: border-box;
 }
 
 .board-heading {
