@@ -132,13 +132,13 @@ namespace Blazorships.Shared.GameObjects
             return hitNeighbors[neighborID];
         }
 
-        public ShotResult ProcessShot(Coordinates coords)
+        public ShotOutcome ProcessShot(Coordinates coords)
         {
             var panel = GameBoard.Panels.At(coords.Row, coords.Column);
             if (!panel.IsOccupied)
             {
                 Console.WriteLine(Name + " says: \"Miss!\"");
-                return ShotResult.Miss;
+                return new ShotOutcome { Result = ShotResult.Miss };
             }
             var ship = Ships.First(x => x.OccupationType == panel.OccupationType);
             ship.Hits++;
@@ -147,8 +147,13 @@ namespace Blazorships.Shared.GameObjects
             if (ship.IsSunk)
             {
                 Console.WriteLine(Name + " says: \"You sunk my " + ship.Name + "!\"");
+                return new ShotOutcome
+                {
+                    Result = ShotResult.Hit,
+                    SunkShipName = ship.Name
+                };
             }
-            return ShotResult.Hit;
+            return new ShotOutcome { Result = ShotResult.Hit };
         }
 
         public void ProcessShotResult(Coordinates coords, ShotResult result)

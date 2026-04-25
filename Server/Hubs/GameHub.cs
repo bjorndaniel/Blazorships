@@ -1,4 +1,5 @@
 ﻿using Blazorships.Shared.GameObjects;
+using Blazorships.Shared.Helpers;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using System;
@@ -19,7 +20,7 @@ namespace Blazorships.Server.Hubs
                 _cache.Set("GameCacheKey", new List<Game>());
             }
         }
-       
+
         public async Task SendMessage(string gameId, string playerId, string message)
         {
             var games = _cache.Get<List<Game>>("GameCacheKey");
@@ -64,8 +65,12 @@ namespace Blazorships.Server.Hubs
         {
             var games = _cache.Get<List<Game>>("GameCacheKey");
             var game = games.First(_ => _.Id == gameId);
-            game.Fire(playerId, row, column);
+            var fireOutcome = game.Fire(playerId, row, column);
             _cache.Set("GameCacheKey", games);
+            if (fireOutcome?.IsShipSunk == true)
+            {
+                await AnnounceSinking(game, playerId, fireOutcome.SunkShipName);
+            }
             await SendUpdateGame(game);
         }
 
@@ -73,9 +78,29 @@ namespace Blazorships.Server.Hubs
         {
             var games = _cache.Get<List<Game>>("GameCacheKey");
             var game = games.First(_ => _.Id == gameId);
-            game.PlayToEnd();
+            var shots = game.PlayToEnd();
             _cache.Set("GameCacheKey", games);
+            foreach (var shot in shots.Where(s => s.Outcome?.IsShipSunk == true))
+            {
+                await AnnounceSinking(game, shot.ShootingPlayerId, shot.Outcome.SunkShipName);
+            }
             await SendUpdateGame(game);
+        }
+
+        private async Task AnnounceSinking(Game game, string firingPlayerId, string sunkShipName)
+        {
+            var firingPlayer = game.GetPlayer(firingPlayerId);
+            var defender = game.Player1.Id == firingPlayerId ? game.Player2 : game.Player1;
+            if (!string.IsNullOrEmpty(firingPlayer?.ConnectionId))
+            {
+                await Clients.Client(firingPlayer.ConnectionId)
+                    .SendAsync("GameMessage", defender.Name, $"You sunk my {sunkShipName}!");
+            }
+            if (!string.IsNullOrEmpty(defender?.ConnectionId))
+            {
+                await Clients.Client(defender.ConnectionId)
+                    .SendAsync("GameMessage", firingPlayer.Name, $"Your {sunkShipName} has been sunk!");
+            }
         }
 
         public Game GetGame(string gameId) => _cache.Get<List<Game>>("GameCacheKey").FirstOrDefault(_ => _.Id == gameId);

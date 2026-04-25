@@ -1,7 +1,9 @@
 ﻿//From https://github.com/exceptionnotfound/BattleshipModellingPractice
 
 using Blazorships.Shared.Boards;
+using Blazorships.Shared.Helpers;
 using System;
+using System.Collections.Generic;
 
 namespace Blazorships.Shared.GameObjects
 {
@@ -72,20 +74,26 @@ namespace Blazorships.Shared.GameObjects
 
         public bool SpotAvailable => string.IsNullOrEmpty(Player2?.Name);
 
-        public void PlayRound()
+        public List<RoundShot> PlayRound()
         {
             //Each exchange of shots is called a Round.
             //One round = Player 1 fires a shot, then Player 2 fires a shot.
+            var shots = new List<RoundShot>();
+
             var coordinates = Player1.FireShot();
             var result = Player2.ProcessShot(coordinates);
-            Player1.ProcessShotResult(coordinates, result);
+            Player1.ProcessShotResult(coordinates, result.Result);
+            shots.Add(new RoundShot { ShootingPlayerId = Player1.Id, Outcome = result });
 
             if (!Player2.HasLost)//If player 2 already lost, we can't let them take another turn.
             {
                 coordinates = Player2.FireShot();
                 result = Player1.ProcessShot(coordinates);
-                Player2.ProcessShotResult(coordinates, result);
+                Player2.ProcessShotResult(coordinates, result.Result);
+                shots.Add(new RoundShot { ShootingPlayerId = Player2.Id, Outcome = result });
             }
+
+            return shots;
         }
 
         public Player GetPlayer(string id) => Player1.Id == id ? Player1 : Player2;
@@ -103,14 +111,14 @@ namespace Blazorships.Shared.GameObjects
             return null;
         }
 
-        public void Fire(string playerId, int row = -1, int column = -1)
+        public ShotOutcome Fire(string playerId, int row = -1, int column = -1)
         {
             if (Player1.Id == playerId)
             {
                 if (!Player1.IsMyTurn)
                 {
                     Console.WriteLine("Not Player1's turn");
-                    return;
+                    return null;
                 }
                 var coordinates = new Coordinates { Row = row, Column = column };
                 if (coordinates.Column < 0 || coordinates.Row < 0)
@@ -118,14 +126,16 @@ namespace Blazorships.Shared.GameObjects
                     coordinates = Player1.FireShot();
                 }
                 var result = Player2.ProcessShot(coordinates);
-                Player1.ProcessShotResult(coordinates, result);
+                Player1.ProcessShotResult(coordinates, result.Result);
+                UpdateGameState();
+                return result;
             }
             else
             {
                 if (!Player2.IsMyTurn)
                 {
                     Console.WriteLine("Not Player2's turn");
-                    return;
+                    return null;
                 }
                 var coordinates = new Coordinates { Row = row, Column = column };
                 if (coordinates.Column < 0 || coordinates.Row < 0)
@@ -133,8 +143,14 @@ namespace Blazorships.Shared.GameObjects
                     coordinates = Player2.FireShot();
                 }
                 var result = Player1.ProcessShot(coordinates);
-                Player2.ProcessShotResult(coordinates, result);
+                Player2.ProcessShotResult(coordinates, result.Result);
+                UpdateGameState();
+                return result;
             }
+        }
+
+        private void UpdateGameState()
+        {
             Player1.IsMyTurn = !Player1.IsMyTurn;
             Player2.IsMyTurn = !Player2.IsMyTurn;
             if (Player1.HasLost)
@@ -149,11 +165,12 @@ namespace Blazorships.Shared.GameObjects
             }
         }
 
-        public void PlayToEnd()
+        public List<RoundShot> PlayToEnd()
         {
+            var shots = new List<RoundShot>();
             while (!Player1.HasLost && !Player2.HasLost)
             {
-                PlayRound();
+                shots.AddRange(PlayRound());
             }
             if (Player1.HasLost)
             {
@@ -165,6 +182,7 @@ namespace Blazorships.Shared.GameObjects
                 GameOver = true;
                 Winner = Player1.Name;
             }
+            return shots;
         }
     }
 }
